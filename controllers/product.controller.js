@@ -77,10 +77,28 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// Delete all products(admin) only
+const deleteAllProducts = async (req, res) => {
+  try {
+    // Await the deletion operation to ensure it's completed before proceeding
+    const result = await Product.deleteMany({});
+
+    // Check if any products were deleted
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "No products found to delete" });
+    }
+
+    res.status(200).json({ message: "All products successfully deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getProducts,
   getProduct,
   addProduct,
   updateProduct,
   deleteProduct,
+  deleteAllProducts,
 };
