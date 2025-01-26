@@ -13,7 +13,7 @@ const {
 } = require("../middlewares/auth.middleware");
 
 // user routes
-router.get("/my-orders", authenticateToken, getUserOrders);
+router.get("/my-orders/:userId", authenticateToken, getUserOrders);
 router.post("/place-order", authenticateToken, placeOrder);
 router.delete("/:orderId", authenticateToken, deleteOrder);
 
