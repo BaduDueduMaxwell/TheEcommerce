@@ -4,13 +4,15 @@ const {
   getUserCart,
   addUserCart,
   updateUserCart,
-  deleteUserCart,
+  deleteProductFromCart,
+  deleteProductsFromCart,
 } = require("../controllers/cart.controller");
 const { authenticateToken } = require("../middlewares/auth.middleware");
 
-router.get("/", authenticateToken, getUserCart);
+router.get("/:userId", authenticateToken, getUserCart);
 router.post("/", authenticateToken, addUserCart);
-router.put("/:id", authenticateToken, updateUserCart);
-router.delete("/:id", authenticateToken, deleteUserCart);
+router.put("/:userId", authenticateToken, updateUserCart);
+router.delete("/:userId", authenticateToken, deleteProductsFromCart);
+router.delete("/:userId/:productId", authenticateToken, deleteProductFromCart);
 
 module.exports = router;
