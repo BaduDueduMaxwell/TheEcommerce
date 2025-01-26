@@ -1,24 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const { createPayment, verifyPayment, handleWebhook } = require("../controllers/payment.controller");
 
-const {
-  addPayment,
-  getAllPayment,
-  getSpecificOrderPayment,
-} = require("../controllers/payment.controller");
-const {
-  authenticateToken,
-  authorizeRole,
-} = require("../middlewares/auth.middleware");
-
-// Protected Routes
-router.post("/", authenticateToken, addPayment);
-router.get("/", authenticateToken, authorizeRole("admin"), getAllPayment);
-router.get(
-  "/:id",
-  authenticateToken,
-  authorizeRole("admin", "user"),
-  getSpecificOrderPayment
-);
+// Payment routes
+router.post("/", createPayment); // Initialize payment
+router.get("/verify/:reference", verifyPayment); // Verify payment
+router.post("/webhook", handleWebhook); // Webhook for Paystack
 
 module.exports = router;
