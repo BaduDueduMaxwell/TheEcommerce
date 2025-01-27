@@ -1,6 +1,4 @@
-TheEcommerce
-```markdown
-# TheEcommerce
+#TheEcommerce
 
 API for TheEcommerce App that has paystack integrated into it
 
