@@ -1,7 +1,7 @@
 ```markdown
 # TheEcommerce
 
-API for TheEcommerce App
+API for TheEcommerce App that has paystack integrated into it
 
 ## Table of Contents
 - [Project Overview](#project-overview)
@@ -85,6 +85,3 @@ Contributions are welcome! Please open an issue or submit a pull request.
 ## License
 
 This project is licensed under the ISC License.
-```
-
-You can now [create the README.md file](https://github.com/BaduDueduMaxwell/TheEcommerce/new/master?filename=README.md) and paste this content into it.
