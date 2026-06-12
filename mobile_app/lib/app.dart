@@ -60,7 +60,7 @@ class _CommerceMobileAppState extends State<CommerceMobileApp> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Everything Store',
+      title: 'TheEcommerce',
       scrollBehavior: const CommerceScrollBehavior(),
       theme: ThemeData(
         colorScheme: colorScheme,

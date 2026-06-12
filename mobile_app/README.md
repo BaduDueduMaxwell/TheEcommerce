@@ -1,6 +1,6 @@
-# Everything Store Mobile App
+# TheEcommerce Mobile App
 
-The Flutter storefront for Everything Store. It uses the local
+The Flutter storefront for TheEcommerce. It uses the local
 [`commerce_sdk`](../packages/commerce_sdk) package for authentication, product
 discovery, cart checkout, orders, analytics, and admin product management.
 

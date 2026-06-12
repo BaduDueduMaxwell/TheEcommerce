@@ -1,6 +1,6 @@
 # commerce_sdk
 
-A typed Dart client for the Everything Store API.
+A typed Dart client for TheEcommerce API.
 
 ## Features
 

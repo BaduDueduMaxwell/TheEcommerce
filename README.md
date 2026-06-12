@@ -1,8 +1,8 @@
-# Everything Store
+# TheEcommerce
 
 [![CI](https://github.com/BaduDueduMaxwell/TheEcommerce/actions/workflows/ci.yml/badge.svg)](https://github.com/BaduDueduMaxwell/TheEcommerce/actions/workflows/ci.yml)
 
-Everything Store is a full-stack ecommerce project with a Flutter app, a
+TheEcommerce is a full-stack ecommerce project with a Flutter app, a
 reusable Dart SDK, and an Express API. Customers can browse products, manage a
 cart, place orders, and continue to Paystack checkout. Admin users can manage
 the catalogue from the same mobile app.

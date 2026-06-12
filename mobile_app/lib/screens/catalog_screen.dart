@@ -376,7 +376,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text(
-              'Everything Store',
+              'TheEcommerce',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             actions: [

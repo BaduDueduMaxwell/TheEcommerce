@@ -87,7 +87,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     const Icon(Icons.shopping_bag_rounded, size: 56),
                     const SizedBox(height: 20),
                     Text(
-                      _isSignUp ? 'Create your account' : 'Everything Store',
+                      _isSignUp ? 'Create your account' : 'TheEcommerce',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.w800),

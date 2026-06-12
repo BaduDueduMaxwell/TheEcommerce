@@ -27,7 +27,7 @@ void main() {
 
     await tester.pumpWidget(CommerceMobileApp(client: client));
 
-    expect(find.text('Everything Store'), findsOneWidget);
+    expect(find.text('TheEcommerce'), findsOneWidget);
     expect(find.text('Find something worth keeping.'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);
     expect(find.text('New here? Create an account'), findsOneWidget);

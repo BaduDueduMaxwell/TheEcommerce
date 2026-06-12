@@ -1,5 +1,5 @@
 name: commerce_sdk
-description: Typed Dart client for the Everything Store API.
+description: Typed Dart client for TheEcommerce API.
 version: 1.0.0
 repository: https://github.com/BaduDueduMaxwell/TheEcommerce
 
