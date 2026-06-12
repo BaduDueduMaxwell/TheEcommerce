@@ -1,20 +1,38 @@
 const axios = require("axios");
 const crypto = require("crypto");
 const Payment = require("../models/payment.model");
+const Order = require("../models/order.model");
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
 // Initialize a payment
 const createPayment = async (req, res) => {
   try {
-    const { orderId, amount, email, currency = "NGN" } = req.body;
+    const { orderId, email, currency = "GHS" } = req.body;
 
-    if (!orderId || !amount || !email) {
+    if (!orderId || !email) {
       return res.status(400).json({
         success: false,
-        message: "orderId, amount, and email are required",
+        message: "orderId and email are required",
       });
     }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      req.user.userId !== order.userId.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot initialize payment for this order",
+      });
+    }
+
+    const amount = order.totalAmount;
 
     const response = await axios.post(
       "https://api.paystack.co/transaction/initialize",
@@ -65,6 +83,34 @@ const verifyPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Reference is required" });
     }
 
+    const existingPayment = await Payment.findOne({
+      transactionId: reference,
+    }).populate("orderId");
+
+    if (!existingPayment) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment record not found",
+      });
+    }
+
+    if (!existingPayment.orderId) {
+      return res.status(404).json({
+        success: false,
+        message: "Associated order not found",
+      });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      req.user.userId !== existingPayment.orderId.userId.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot verify this payment",
+      });
+    }
+
     const response = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
@@ -99,9 +145,14 @@ const verifyPayment = async (req, res) => {
 const handleWebhook = async (req, res) => {
   try {
     const signature = req.headers["x-paystack-signature"];
-    const payload = JSON.stringify(req.body);
+    if (!req.rawBody) {
+      return res.status(400).json({ success: false, message: "Missing payload" });
+    }
 
-    const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(payload).digest("hex");
+    const hash = crypto
+      .createHmac("sha512", PAYSTACK_SECRET_KEY)
+      .update(req.rawBody)
+      .digest("hex");
 
     if (hash !== signature) {
       return res.status(400).json({ success: false, message: "Invalid signature" });

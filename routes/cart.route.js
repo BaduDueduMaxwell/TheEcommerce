@@ -7,12 +7,30 @@ const {
   deleteProductFromCart,
   deleteProductsFromCart,
 } = require("../controllers/cart.controller");
-const { authenticateToken } = require("../middlewares/auth.middleware");
+const {
+  authenticateToken,
+  authorizeSelfOrAdmin,
+} = require("../middlewares/auth.middleware");
 
-router.get("/:userId", authenticateToken, getUserCart);
-router.post("/", authenticateToken, addUserCart);
-router.put("/:userId", authenticateToken, updateUserCart);
-router.delete("/:userId", authenticateToken, deleteProductsFromCart);
-router.delete("/:userId/:productId", authenticateToken, deleteProductFromCart);
+router.get("/:userId", authenticateToken, authorizeSelfOrAdmin(), getUserCart);
+router.post(
+  "/",
+  authenticateToken,
+  authorizeSelfOrAdmin({ source: "body" }),
+  addUserCart
+);
+router.put("/:userId", authenticateToken, authorizeSelfOrAdmin(), updateUserCart);
+router.delete(
+  "/:userId",
+  authenticateToken,
+  authorizeSelfOrAdmin(),
+  deleteProductsFromCart
+);
+router.delete(
+  "/:userId/:productId",
+  authenticateToken,
+  authorizeSelfOrAdmin(),
+  deleteProductFromCart
+);
 
 module.exports = router;

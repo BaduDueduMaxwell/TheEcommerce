@@ -6,7 +6,6 @@ const {
   addProduct,
   updateProduct,
   deleteProduct,
-  deleteAllProducts,
 } = require("../controllers/product.controller");
 const {
   authenticateToken,
@@ -25,11 +24,11 @@ router.put(
   authorizeRole("admin"),
   updateProduct
 );
-router.delete(
-  "/delete-all",
+router.patch(
+  "/:productId",
   authenticateToken,
   authorizeRole("admin"),
-  deleteAllProducts
+  updateProduct
 );
 router.delete(
   "/:productId",

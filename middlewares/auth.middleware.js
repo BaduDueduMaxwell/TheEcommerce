@@ -1,4 +1,8 @@
 const jwt = require("jsonwebtoken");
+const {
+  hasRequiredRole,
+  canAccessUserResource,
+} = require("../utils/authorization");
 
 const authenticateToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -21,7 +25,7 @@ const authenticateToken = (req, res, next) => {
 
 const authorizeRole = (requiredRoles) => {
   return (req, res, next) => {
-    if (!requiredRoles.includes(req.user.role)) {
+    if (!hasRequiredRole(req.user.role, requiredRoles)) {
       return res.status(403).json({
         message: "Access denied. You do not have the required permissions.",
       });
@@ -30,4 +34,33 @@ const authorizeRole = (requiredRoles) => {
   };
 };
 
-module.exports = { authenticateToken, authorizeRole };
+const authorizeSelfOrAdmin = ({
+  source = "params",
+  field = "userId",
+} = {}) => {
+  return (req, res, next) => {
+    const requestedUserId = req[source]?.[field];
+    const authenticatedUserId = req.user?.userId;
+
+    if (
+      !requestedUserId ||
+      !canAccessUserResource({
+        authenticatedUserId,
+        requestedUserId,
+        role: req.user?.role,
+      })
+    ) {
+      return res.status(403).json({
+        message: "Access denied. You can only access your own resources.",
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = {
+  authenticateToken,
+  authorizeRole,
+  authorizeSelfOrAdmin,
+};

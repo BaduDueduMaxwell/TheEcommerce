@@ -1,16 +1,14 @@
 const Order = require("../models/order.model");
-const Cart = require("../models/cart.model");
 const User = require("../models/user.model");
+const Product = require("../models/product.model");
 const mongoose = require("mongoose");
 
 const placeOrder = async (req, res) => {
   try {
-    console.log("Request received at /place-order");
     const userId = req.user.userId;
 
     // Validate userId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      console.log("Invalid user ID format");
       return res
         .status(400)
         .json({ message: `Invalid user ID format: ${userId}` });
@@ -43,36 +41,54 @@ const placeOrder = async (req, res) => {
     }
 
     // Validate payment method
-    const validPaymentMethods = ["CreditCard", "PayPal", "BankTransfer"];
+    const validPaymentMethods = [
+      "Paystack",
+      "CreditCard",
+      "PayPal",
+      "BankTransfer",
+    ];
     if (!validPaymentMethods.includes(paymentMethod)) {
-      // Add items to the cart if the payment method is invalid
-      console.log("Invalid payment method, adding items to cart");
-      let userCart = await Cart.findOne({ userId });
-      if (!userCart) {
-        userCart = new Cart({ userId, items });
-      } else {
-        // Merge items into the existing cart
-        items.forEach((item) => {
-          const existingItemIndex = userCart.items.findIndex(
-            (cartItem) => cartItem.productId.toString() === item.productId
-          );
-          if (existingItemIndex !== -1) {
-            // Update quantity if item already exists in the cart
-            userCart.items[existingItemIndex].quantity += item.quantity;
-          } else {
-            // Add new item to the cart
-            userCart.items.push(item);
-          }
-        });
-      }
-      await userCart.save();
-      return res
-        .status(200)
-        .json({ message: "Items added to cart due to invalid payment method" });
+      return res.status(400).json({ message: "Invalid payment method" });
     }
 
-    // Calculate total amount
-    const totalAmount = items.reduce(
+    if (
+      items.some(
+        (item) =>
+          !mongoose.Types.ObjectId.isValid(item.productId) ||
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1
+      )
+    ) {
+      return res.status(400).json({
+        message: "Each item requires a valid productId and positive quantity",
+      });
+    }
+
+    const productIds = items.map((item) => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } });
+    const productsById = new Map(
+      products.map((product) => [product._id.toString(), product])
+    );
+
+    if (products.length !== new Set(productIds).size) {
+      return res.status(400).json({ message: "One or more products are invalid" });
+    }
+
+    const trustedItems = items.map((item) => {
+      const product = productsById.get(item.productId.toString());
+      if (item.quantity > product.stock) {
+        const error = new Error(`Insufficient stock for ${product.name}`);
+        error.statusCode = 409;
+        throw error;
+      }
+      return {
+        productId: product._id,
+        quantity: item.quantity,
+        price: product.price,
+      };
+    });
+
+    const totalAmount = trustedItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
@@ -80,7 +96,7 @@ const placeOrder = async (req, res) => {
     // Create new order
     const newOrder = new Order({
       userId,
-      items,
+      items: trustedItems,
       totalAmount,
       shippingAddress,
       paymentMethod,
@@ -95,9 +111,11 @@ const placeOrder = async (req, res) => {
       .json({ message: "Order placed successfully", order: newOrder });
   } catch (error) {
     console.error("Error in placeOrder:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while placing the order" });
+    res.status(error.statusCode || 500).json({
+      message: error.statusCode
+        ? error.message
+        : "An error occurred while placing the order",
+    });
   }
 };
 
@@ -121,15 +139,9 @@ const getUserOrders = async (req, res) => {
         .json({ message: `Invalid user ID format: ${userId}` });
     }
 
-    console.log("Fetching orders for user ID:", userId);
-
     const orders = await Order.find({
       userId: new mongoose.Types.ObjectId(userId),
     });
-
-    if (!orders.length) {
-      return res.status(404).json({ message: "No orders found for this user" });
-    }
 
     res.status(200).json(orders);
   } catch (error) {
@@ -179,7 +191,10 @@ const deleteOrder = async (req, res) => {
     }
 
     // Authorization check
-    if (req.user.role !== "admin" && req.user.id !== order.userId.toString()) {
+    if (
+      req.user.role !== "admin" &&
+      req.user.userId !== order.userId.toString()
+    ) {
       return res
         .status(403)
         .json({ message: "You do not have permission to delete this order" });

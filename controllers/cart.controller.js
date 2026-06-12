@@ -120,8 +120,6 @@ const deleteProductsFromCart = async (req, res) => {
 const deleteProductFromCart = async (req, res) => {
   try {
     const { userId, productId } = req.params;
-    console.log(userId, productId);
-
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
     }

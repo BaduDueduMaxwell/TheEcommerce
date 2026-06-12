@@ -11,6 +11,7 @@ const {
 const {
   authenticateToken,
   authorizeRole,
+  authorizeSelfOrAdmin,
 } = require("../middlewares/auth.middleware");
 
 // Public Routes
@@ -19,8 +20,8 @@ router.post("/login", loginUser);
 
 // Protected Routes (Require Authentication)
 router.get("/", authenticateToken, authorizeRole("admin"), getUsers);
-router.get("/:userId", authenticateToken, getUser);
-router.put("/:userId", authenticateToken, updateUser);
+router.get("/:userId", authenticateToken, authorizeSelfOrAdmin(), getUser);
+router.put("/:userId", authenticateToken, authorizeSelfOrAdmin(), updateUser);
 router.delete(
   "/:userId",
   authenticateToken,
